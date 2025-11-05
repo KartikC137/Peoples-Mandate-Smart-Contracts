@@ -1,9 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import {IWorldID} from "./interface/IWorldID.sol";
 import {IBallot} from "./ballots/interface/IBallot.sol";
 import {IResultCalculator} from "./resultCalculators/interface/IResultCalculator.sol";
 import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import { ByteHasher } from './helpers/ByteHasher.sol';
 
 /**
  * @title Election Contract
@@ -19,8 +21,8 @@ contract Election is Initializable {
     // Errors      ///
     //////////////////
 
+    error InvalidNullifier();
     error Election_NotOwner();
-    error Election_AlreadyVoted();
     error Election_InvalidVoteArrayLength();
     error Election_VotesUnavailable();
     error Election_ElectionInactive();
@@ -34,6 +36,8 @@ contract Election is Initializable {
     ////////////////////////////
     // Types Declarations    ///
     ////////////////////////////
+
+    using ByteHasher for bytes;
 
     struct ElectionInfo {
         uint64 startTime;
@@ -52,13 +56,18 @@ contract Election is Initializable {
     // State Variables   ///
     ////////////////////////
 
+    // WorldID variables
+
+    IWorldID private worldId;
+    uint256 private externalNullifierHash;
+    uint256 private groupId = 1;
+    mapping(uint256 => bool) internal nullifierHashes;
+
     IBallot private ballot;
     IResultCalculator private resultCalculator;
 
     ElectionInfo public electionInfo;
     Candidate[] public candidates;
-
-    mapping(address user => bool isVoted) public usersToIsVoted;
 
     address public factoryContractAddress;
     address public owner;
@@ -119,6 +128,9 @@ contract Election is Initializable {
     ///////////////////////////
 
     function initialize(
+        IWorldID _worldId,
+        string memory _appId,
+        string memory _action,
         ElectionInfo memory _electionInfo,
         Candidate[] memory _candidates,
         uint256 _resultType,
@@ -127,6 +139,9 @@ contract Election is Initializable {
         address _owner,
         address _resultCalculator
     ) external initializer {
+        worldId = _worldId;
+        externalNullifierHash = abi.encodePacked(abi.encodePacked(_appId).hashToField(), _action).hashToField();
+
         electionInfo = _electionInfo;
         uint256 _totalCandidates = _candidates.length;
 
@@ -143,15 +158,34 @@ contract Election is Initializable {
         resultCalculator = IResultCalculator(_resultCalculator);
     }
 
-    function userVote(uint256[] memory voteArr) external electionInactiveCheck electionEndedCheck {
+    function userVote(
+        uint256[] memory voteArr,
+        uint256 root,
+        uint256 nullifierHash,
+        uint256[8] calldata proof
+    ) external electionInactiveCheck electionEndedCheck {
         if (voteArr.length > candidates.length) revert Election_InvalidVoteArrayLength();
-        if (usersToIsVoted[msg.sender]) revert Election_AlreadyVoted();
+        if (nullifierHashes[nullifierHash]) {
+            revert InvalidNullifier();
+        }
+
+        uint256 signalHash = abi.encodePacked(msg.sender).hashToField();
+
+        worldId.verifyProof(
+            root,
+            signalHash,
+            nullifierHash,
+            externalNullifierHash,
+            proof
+        );
+
+        nullifierHashes[nullifierHash] = true;
+
         if (isBallotInitialized == false) {
             ballot.init(candidates.length);
             isBallotInitialized = true;
         }
 
-        usersToIsVoted[msg.sender] = true;
         totalVoters++;
 
         emit CastVote(msg.sender);
@@ -227,6 +261,10 @@ contract Election is Initializable {
     // Public & External View Functions  ///
     ////////////////////////////////////////
 
+    function getElectionElectionInfo() external view returns (ElectionInfo memory) {
+        return electionInfo;
+    }
+    
     function getElectionStatus() external view returns (bool) {
         return isElectionEnded;
     }

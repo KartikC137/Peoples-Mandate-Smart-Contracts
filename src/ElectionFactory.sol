@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import {IWorldID} from "./interface/IWorldID.sol";
 import {Election} from "./Election.sol";
 import {BallotGenerator} from "./ballots/BallotGenerator.sol";
 import {ResultCalculator} from "./resultCalculators/ResultCalculator.sol";
@@ -38,6 +39,7 @@ contract ElectionFactory {
     address private immutable RESULT_CALCULATOR_ADDRESS;
     address private immutable ELECTION_GENERATOR_ADDRESS;
     BallotGenerator private immutable BALLOT_GENERATOR;
+    IWorldID private immutable WORLD_ID;
 
     //////////////
     // Events  ///
@@ -65,6 +67,7 @@ contract ElectionFactory {
         ELECTION_GENERATOR_ADDRESS = address(new Election());
         BALLOT_GENERATOR = new BallotGenerator();
         RESULT_CALCULATOR_ADDRESS = address(new ResultCalculator());
+        WORLD_ID = IWorldID(0x469449f251692E0779667583026b5A1E99512157);
     }
 
     ///////////////////////////
@@ -72,6 +75,8 @@ contract ElectionFactory {
     ///////////////////////////
 
     function createElection(
+        string memory _appId,
+        string memory _action,
         Election.ElectionInfo memory _electionInfo,
         Election.Candidate[] memory _candidates,
         uint256 _ballotType,
@@ -86,7 +91,16 @@ contract ElectionFactory {
 
         Election election = Election(electionAddress);
         election.initialize(
-            _electionInfo, _candidates, _resultType, electionCount, _ballot, msg.sender, RESULT_CALCULATOR_ADDRESS
+            WORLD_ID,
+            _appId,
+            _action,
+            _electionInfo,
+            _candidates,
+            _resultType,
+            electionCount,
+            _ballot,
+            msg.sender,
+            RESULT_CALCULATOR_ADDRESS
         );
 
         emit ElectionCreated(msg.sender, _electionInfo, _candidates);
