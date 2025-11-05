@@ -16,10 +16,7 @@ contract ResultCalculator is
     SchulzeResult,
     MooreResult
 {
-    function getResults(
-        bytes calldata returnData,
-        uint _resultType
-    ) external pure returns (uint[] memory) {
+    function getResults(bytes calldata returnData, uint256 _resultType) external pure returns (uint256[] memory) {
         //add pure here
         if (_resultType < 3) {
             // Result for General & Ranked Ballot

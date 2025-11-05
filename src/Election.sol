@@ -14,7 +14,6 @@ import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.s
  *
  * @notice Cross - chain voting is not yet implemented
  */
-
 contract Election is Initializable {
     //////////////////
     // Errors      ///
@@ -93,8 +92,9 @@ contract Election is Initializable {
     }
 
     modifier electionInactiveCheck() {
-        if (block.timestamp < electionInfo.startTime)
+        if (block.timestamp < electionInfo.startTime) {
             revert Election_ElectionInactive();
+        }
         _;
     }
 
@@ -104,8 +104,9 @@ contract Election is Initializable {
     }
 
     modifier electionEndedCheck() {
-        if ((block.timestamp > electionInfo.endTime) || isElectionEnded)
+        if ((block.timestamp > electionInfo.endTime) || isElectionEnded) {
             revert Election_ElectionEnded();
+        }
         _;
     }
 
@@ -132,9 +133,7 @@ contract Election is Initializable {
         if (_totalCandidates < 2) revert Election_InvalidCandidatesLength();
 
         for (uint256 i = 0; i < _totalCandidates; i++) {
-            candidates.push(
-                Candidate(i, _candidates[i].name, _candidates[i].description)
-            );
+            candidates.push(Candidate(i, _candidates[i].name, _candidates[i].description));
         }
         resultType = _resultType;
         electionId = _electionId;
@@ -144,41 +143,35 @@ contract Election is Initializable {
         resultCalculator = IResultCalculator(_resultCalculator);
     }
 
-    function userVote(
-        uint256[] memory voteArr
-    ) external electionInactiveCheck electionEndedCheck {
-        if(voteArr.length > candidates.length) revert Election_InvalidVoteArrayLength();
+    function userVote(uint256[] memory voteArr) external electionInactiveCheck electionEndedCheck {
+        if (voteArr.length > candidates.length) revert Election_InvalidVoteArrayLength();
         if (usersToIsVoted[msg.sender]) revert Election_AlreadyVoted();
         if (isBallotInitialized == false) {
             ballot.init(candidates.length);
             isBallotInitialized = true;
         }
-        
+
         usersToIsVoted[msg.sender] = true;
         totalVoters++;
 
         emit CastVote(msg.sender);
-        
+
         ballot.vote(voteArr);
     }
 
-    function addCandidate(
-        string calldata _name,
-        string calldata _description
-    ) external onlyOwner electionStartedCheck electionEndedCheck {
+    function addCandidate(string calldata _name, string calldata _description)
+        external
+        onlyOwner
+        electionStartedCheck
+        electionEndedCheck
+    {
         emit AddCandidate(_name, _description);
 
-        Candidate memory newCandidate = Candidate(
-            candidates.length,
-            _name,
-            _description
-        );
+        Candidate memory newCandidate = Candidate(candidates.length, _name, _description);
         candidates.push(newCandidate);
     }
 
-    function removeCandidate(
-        uint256 _id
-    ) external onlyOwner electionStartedCheck electionEndedCheck {
+    function removeCandidate(uint256 _id) external onlyOwner electionStartedCheck electionEndedCheck {
         uint256 totalCandidates = candidates.length;
 
         if (_id >= totalCandidates) revert Election_InvalidCandidateID();
@@ -210,12 +203,9 @@ contract Election is Initializable {
     ///////////////////////////////////
 
     function _getTotalVotes() internal view returns (bytes memory) {
-
         bytes memory payload = abi.encodeWithSignature("getVotes()");
 
-        (bool success, bytes memory totalVotes) = address(ballot).staticcall(
-            payload
-        );
+        (bool success, bytes memory totalVotes) = address(ballot).staticcall(payload);
         if (!success) revert Election_VotesUnavailable();
 
         return totalVotes;
@@ -224,10 +214,7 @@ contract Election is Initializable {
     function _calculateResult() internal {
         if (isResultsDeclared) revert Election_ResultsHaveAlreadyBeenDeclared(winners);
         bytes memory totalVotes = _getTotalVotes();
-        uint256[] memory _winners = resultCalculator.getResults(
-            totalVotes,
-            resultType
-        );
+        uint256[] memory _winners = resultCalculator.getResults(totalVotes, resultType);
         winners = _winners;
         isResultsDeclared = true;
     }

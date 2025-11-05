@@ -6,17 +6,13 @@ import {Candidatecheck} from "./abstract/CandidateCheck.sol";
 import {WinnersArray} from "./abstract/WinnersArray.sol";
 
 contract SchulzeResult is Errors, Candidatecheck, WinnersArray {
-    function calculateSchulzeResult(
-        bytes memory returnData
-    ) public pure returns (uint256[] memory) {
+    function calculateSchulzeResult(bytes memory returnData) public pure returns (uint256[] memory) {
         uint256[][] memory preferences = abi.decode(returnData, (uint256[][]));
         uint256[] memory winners = performSchulze(preferences);
         return winners;
     }
 
-    function performSchulze(
-        uint256[][] memory preferences
-    ) internal pure returns (uint256[] memory) {
+    function performSchulze(uint256[][] memory preferences) internal pure returns (uint256[] memory) {
         uint256 numCandidates = preferences.length;
 
         if (numCandidates < 2) {
@@ -24,12 +20,12 @@ contract SchulzeResult is Errors, Candidatecheck, WinnersArray {
         }
 
         uint256[][] memory strength = new uint256[][](numCandidates);
-        for (uint i = 0; i < numCandidates; i++) {
+        for (uint256 i = 0; i < numCandidates; i++) {
             strength[i] = new uint256[](numCandidates);
         }
 
-        for (uint i = 0; i < numCandidates; i++) {
-            for (uint j = 0; j < numCandidates; j++) {
+        for (uint256 i = 0; i < numCandidates; i++) {
+            for (uint256 j = 0; j < numCandidates; j++) {
                 if (i != j) {
                     if (preferences[i][j] > preferences[j][i]) {
                         strength[i][j] = preferences[i][j];
@@ -38,18 +34,13 @@ contract SchulzeResult is Errors, Candidatecheck, WinnersArray {
             }
         }
 
-        for (uint i = 0; i < numCandidates; i++) {
-            for (uint j = 0; j < numCandidates; j++) {
+        for (uint256 i = 0; i < numCandidates; i++) {
+            for (uint256 j = 0; j < numCandidates; j++) {
                 if (i != j) {
-                    for (uint k = 0; k < numCandidates; k++) {
+                    for (uint256 k = 0; k < numCandidates; k++) {
                         if (i != k && j != k) {
-                            if (
-                                strength[j][k] < strength[j][i] &&
-                                strength[j][k] < strength[i][k]
-                            ) {
-                                strength[j][k] = strength[j][i] < strength[i][k]
-                                    ? strength[j][i]
-                                    : strength[i][k];
+                            if (strength[j][k] < strength[j][i] && strength[j][k] < strength[i][k]) {
+                                strength[j][k] = strength[j][i] < strength[i][k] ? strength[j][i] : strength[i][k];
                             }
                         }
                     }
@@ -61,9 +52,9 @@ contract SchulzeResult is Errors, Candidatecheck, WinnersArray {
         uint256 winnerCount = 0;
         uint256[] memory scores = new uint256[](numCandidates);
 
-        for (uint i = 0; i < numCandidates; i++) {
+        for (uint256 i = 0; i < numCandidates; i++) {
             uint256 score = 0;
-            for (uint j = 0; j < numCandidates; j++) {
+            for (uint256 j = 0; j < numCandidates; j++) {
                 if (i != j) {
                     if (strength[i][j] > strength[j][i]) {
                         score += 1;

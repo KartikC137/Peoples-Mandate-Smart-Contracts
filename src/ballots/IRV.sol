@@ -6,8 +6,8 @@ import {IBallot} from "./interface/IBallot.sol";
 contract IRV is IBallot {
     address public electionContract;
 
-    uint private totalCandidates;
-    uint[][] private votes;
+    uint256 private totalCandidates;
+    uint256[][] private votes;
 
     modifier onlyOwner() {
         if (msg.sender != electionContract) revert UnathourizedBallot();
@@ -18,12 +18,12 @@ contract IRV is IBallot {
         electionContract = _electionAddress;
     }
 
-    function init(uint _totalCandidates) external onlyOwner {
+    function init(uint256 _totalCandidates) external onlyOwner {
         totalCandidates = _totalCandidates;
     }
 
     // voting as preference candidate
-    function vote(uint[] memory voteArr) external onlyOwner {
+    function vote(uint256[] memory voteArr) external onlyOwner {
         if (totalCandidates != voteArr.length) revert VoteInputLength();
         votes.push(voteArr);
     }

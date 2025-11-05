@@ -6,7 +6,7 @@ import {IBallot} from "./interface/IBallot.sol";
 contract QuadraticBallot is IBallot {
     address public electionContract;
 
-    uint[] private candidateVotes;
+    uint256[] private candidateVotes;
 
     modifier onlyOwner() {
         if (msg.sender != electionContract) revert UnathourizedBallot();
@@ -17,16 +17,17 @@ contract QuadraticBallot is IBallot {
         electionContract = _electionAddress;
     }
 
-    function init(uint totalCandidate) external onlyOwner {
-        candidateVotes = new uint[](totalCandidate);
+    function init(uint256 totalCandidate) external onlyOwner {
+        candidateVotes = new uint256[](totalCandidate);
     }
     // voting as preference candidate
-    function vote(uint[] memory voteArr) external onlyOwner {
-        uint totalCandidates = candidateVotes.length;
+
+    function vote(uint256[] memory voteArr) external onlyOwner {
+        uint256 totalCandidates = candidateVotes.length;
         if (voteArr.length != totalCandidates) revert VoteInputLength();
         if (!checkCreditsQuadratic(voteArr)) revert IncorrectCredits();
 
-        for (uint i = 0; i < totalCandidates; i++) {
+        for (uint256 i = 0; i < totalCandidates; i++) {
             // voteArr[i] is the credits alloted per candidate
             candidateVotes[i] += voteArr[i];
         }
@@ -36,11 +37,9 @@ contract QuadraticBallot is IBallot {
         return candidateVotes;
     }
 
-    function checkCreditsQuadratic(
-        uint[] memory voteArr
-    ) internal pure returns (bool) {
-        uint totalCredits = 100;
-        for (uint i = 0; i < voteArr.length; i++) {
+    function checkCreditsQuadratic(uint256[] memory voteArr) internal pure returns (bool) {
+        uint256 totalCredits = 100;
+        for (uint256 i = 0; i < voteArr.length; i++) {
             totalCredits = totalCredits - voteArr[i];
         }
         return totalCredits == 0;

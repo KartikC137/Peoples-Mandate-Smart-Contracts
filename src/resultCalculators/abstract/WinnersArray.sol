@@ -2,16 +2,16 @@
 pragma solidity ^0.8.20;
 
 abstract contract WinnersArray {
-    function getWinnersArray(
-        uint winnerCount,
-        uint maxVotes,
-        uint[] memory candidateList
-    ) internal pure returns (uint[] memory) {
-        uint[] memory winners = new uint[](winnerCount);
-        uint candidatesLength = candidateList.length;
-        uint numWinners = 0;
+    function getWinnersArray(uint256 winnerCount, uint256 maxVotes, uint256[] memory candidateList)
+        internal
+        pure
+        returns (uint256[] memory)
+    {
+        uint256[] memory winners = new uint256[](winnerCount);
+        uint256 candidatesLength = candidateList.length;
+        uint256 numWinners = 0;
 
-        for (uint i = 0; i < candidatesLength; i++) {
+        for (uint256 i = 0; i < candidatesLength; i++) {
             if (candidateList[i] == maxVotes) {
                 winners[numWinners] = i;
                 numWinners++;

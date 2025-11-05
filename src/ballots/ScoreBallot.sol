@@ -4,11 +4,12 @@ pragma solidity ^0.8.24;
 import {IBallot} from "./interface/IBallot.sol";
 
 contract ScoreBallot is IBallot {
-    error InvalidScore(uint score);
+    error InvalidScore(uint256 score);
+
     address public electionContract;
 
-    uint[] private candidateScores;
-    uint public constant MAX_SCORE = 10;
+    uint256[] private candidateScores;
+    uint256 public constant MAX_SCORE = 10;
 
     modifier onlyOwner() {
         if (msg.sender != electionContract) revert UnathourizedBallot();
@@ -19,17 +20,17 @@ contract ScoreBallot is IBallot {
         electionContract = _electionAddress;
     }
 
-    function init(uint totalCandidate) external onlyOwner {
-        candidateScores = new uint[](totalCandidate);
+    function init(uint256 totalCandidate) external onlyOwner {
+        candidateScores = new uint256[](totalCandidate);
     }
 
     // Assign scores on index
-    function vote(uint[] memory voteArr) external onlyOwner {
-        uint totalCandidates = candidateScores.length;
+    function vote(uint256[] memory voteArr) external onlyOwner {
+        uint256 totalCandidates = candidateScores.length;
         if (voteArr.length != totalCandidates) revert VoteInputLength();
 
-        for (uint i = 0; i < totalCandidates; i++) {
-            uint preference = voteArr[i];
+        for (uint256 i = 0; i < totalCandidates; i++) {
+            uint256 preference = voteArr[i];
             if (preference > MAX_SCORE) {
                 revert InvalidScore(preference);
             }

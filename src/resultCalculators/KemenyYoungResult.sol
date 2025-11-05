@@ -6,15 +6,8 @@ import {Candidatecheck} from "./abstract/CandidateCheck.sol";
 import {VoteWinnerCount} from "./abstract/VoteWinnerCount.sol";
 import {WinnersArray} from "./abstract/WinnersArray.sol";
 
-contract KemenyYoungResult is
-    Errors,
-    Candidatecheck,
-    VoteWinnerCount,
-    WinnersArray
-{
-    function calculateKemenyYoungResult(
-        bytes memory returnData
-    ) public pure returns (uint256[] memory) {
+contract KemenyYoungResult is Errors, Candidatecheck, VoteWinnerCount, WinnersArray {
+    function calculateKemenyYoungResult(bytes memory returnData) public pure returns (uint256[] memory) {
         // Decode the returnData to extract the vote arrays
         uint256[][] memory votes = abi.decode(returnData, (uint256[][]));
 
@@ -22,9 +15,7 @@ contract KemenyYoungResult is
         return performKemenyYoung(votes);
     }
 
-    function performKemenyYoung(
-        uint256[][] memory votes
-    ) internal pure returns (uint256[] memory) {
+    function performKemenyYoung(uint256[][] memory votes) internal pure returns (uint256[] memory) {
         uint256 numCandidates = votes.length;
 
         if (numCandidates < 2) {
@@ -33,13 +24,11 @@ contract KemenyYoungResult is
 
         // Compute pairwise scores
         uint256[][] memory pairwiseScores = new uint256[][](numCandidates);
-        for (uint i = 0; i < numCandidates; i++) {
+        for (uint256 i = 0; i < numCandidates; i++) {
             pairwiseScores[i] = new uint256[](numCandidates);
-            for (uint j = 0; j < numCandidates; j++) {
+            for (uint256 j = 0; j < numCandidates; j++) {
                 if (i != j) {
-                    pairwiseScores[i][j] = votes[i][j] > votes[j][i]
-                        ? votes[i][j]
-                        : votes[j][i];
+                    pairwiseScores[i][j] = votes[i][j] > votes[j][i] ? votes[i][j] : votes[j][i];
                 }
             }
         }
@@ -48,11 +37,11 @@ contract KemenyYoungResult is
         uint256[] memory bestRanking = new uint256[](numCandidates);
         uint256 bestScore = 0;
 
-        for (uint i = 0; i < numCandidates; i++) {
+        for (uint256 i = 0; i < numCandidates; i++) {
             uint256[] memory ranking = new uint256[](numCandidates);
             uint256 score = 0;
 
-            for (uint j = 0; j < numCandidates; j++) {
+            for (uint256 j = 0; j < numCandidates; j++) {
                 if (i != j) {
                     if (pairwiseScores[i][j] > pairwiseScores[j][i]) {
                         ranking[i]++;

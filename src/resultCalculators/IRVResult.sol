@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
+
 import {Errors} from "./interface/Errors.sol";
 import {Candidatecheck} from "./abstract/CandidateCheck.sol";
 
 contract IRVResult is Errors, Candidatecheck {
-    function calculateIrvResult(
-        bytes memory returnData
-    ) public pure returns (uint256[] memory winners) {
+    function calculateIrvResult(bytes memory returnData) public pure returns (uint256[] memory winners) {
         // Decode the returnData to extract the vote arrays
         uint256[][] memory votes = abi.decode(returnData, (uint256[][]));
 
@@ -14,9 +13,7 @@ contract IRVResult is Errors, Candidatecheck {
         winners = performIrv(votes);
     }
 
-    function performIrv(
-        uint256[][] memory votes
-    ) internal pure returns (uint256[] memory winners) {
+    function performIrv(uint256[][] memory votes) internal pure returns (uint256[] memory winners) {
         uint256 numCandidates = votes[0].length;
 
         // Check for no candidates
@@ -31,10 +28,7 @@ contract IRVResult is Errors, Candidatecheck {
 
         while (true) {
             // Count the first preferences
-            uint256[] memory firstPreferences = countFirstPreferences(
-                votes,
-                numCandidates
-            );
+            uint256[] memory firstPreferences = countFirstPreferences(votes, numCandidates);
 
             // If any candidate has a majority, they are the winner
             for (uint256 i = 0; i < firstPreferences.length; i++) {
@@ -54,9 +48,7 @@ contract IRVResult is Errors, Candidatecheck {
                     minVotes = firstPreferences[i];
                     minCandidate = i;
                     tie = false;
-                } else if (
-                    firstPreferences[i] == minVotes && firstPreferences[i] > 0
-                ) {
+                } else if (firstPreferences[i] == minVotes && firstPreferences[i] > 0) {
                     tie = false; // Updated tie condition
                 }
             }
@@ -116,10 +108,11 @@ contract IRVResult is Errors, Candidatecheck {
         }
     }
 
-    function countFirstPreferences(
-        uint256[][] memory votes,
-        uint256 numCandidates
-    ) internal pure returns (uint256[] memory) {
+    function countFirstPreferences(uint256[][] memory votes, uint256 numCandidates)
+        internal
+        pure
+        returns (uint256[] memory)
+    {
         // Count the first preferences for each candidate
         uint256[] memory firstPreferences = new uint256[](numCandidates);
         for (uint256 i = 0; i < votes.length; i++) {
@@ -130,10 +123,7 @@ contract IRVResult is Errors, Candidatecheck {
         return firstPreferences;
     }
 
-    function removeCandidate(
-        uint256[] memory ballot,
-        uint256 candidate
-    ) internal pure returns (uint256[] memory) {
+    function removeCandidate(uint256[] memory ballot, uint256 candidate) internal pure returns (uint256[] memory) {
         uint256[] memory newBallot = new uint256[](ballot.length - 1);
         uint256 index = 0;
         for (uint256 i = 0; i < ballot.length; i++) {

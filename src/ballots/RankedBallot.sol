@@ -6,7 +6,7 @@ import {IBallot} from "./interface/IBallot.sol";
 contract RankedBallot is IBallot {
     address public electionContract;
 
-    uint[] private candidateVotes;
+    uint256[] private candidateVotes;
 
     modifier onlyOwner() {
         if (msg.sender != electionContract) revert UnathourizedBallot();
@@ -17,16 +17,16 @@ contract RankedBallot is IBallot {
         electionContract = _electionAddress;
     }
 
-    function init(uint totalCandidate) external onlyOwner {
-        candidateVotes = new uint[](totalCandidate);
+    function init(uint256 totalCandidate) external onlyOwner {
+        candidateVotes = new uint256[](totalCandidate);
     }
 
     // voting as preference candidate
-    function vote(uint[] memory voteArr) external onlyOwner {
-        uint totalCandidates = candidateVotes.length;
+    function vote(uint256[] memory voteArr) external onlyOwner {
+        uint256 totalCandidates = candidateVotes.length;
         if (voteArr.length != totalCandidates) revert VoteInputLength();
 
-        for (uint i = 0; i < totalCandidates; i++) {
+        for (uint256 i = 0; i < totalCandidates; i++) {
             // voteArr[i] is the candidate ID, i is the rank (0-based)
             candidateVotes[voteArr[i]] += totalCandidates - i;
         }

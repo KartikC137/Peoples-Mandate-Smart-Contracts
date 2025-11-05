@@ -9,8 +9,8 @@ contract GeneralBallot is IBallot {
 
     address public electionContract;
 
-    uint private totalCandidate;
-    uint[] private candidateVotes;
+    uint256 private totalCandidate;
+    uint256[] private candidateVotes;
 
     modifier onlyOwner() {
         if (msg.sender != electionContract) revert UnathourizedBallot();
@@ -21,9 +21,9 @@ contract GeneralBallot is IBallot {
         electionContract = _electionAddress;
     }
 
-    function init(uint _totalCandidate) external onlyOwner {
+    function init(uint256 _totalCandidate) external onlyOwner {
         totalCandidate = _totalCandidate;
-        candidateVotes = new uint[](_totalCandidate);
+        candidateVotes = new uint256[](_totalCandidate);
     }
 
     function vote(uint256[] memory _votes) external onlyOwner {

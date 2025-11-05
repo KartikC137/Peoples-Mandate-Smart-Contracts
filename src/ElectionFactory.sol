@@ -15,7 +15,6 @@ import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
  * 1. Cross - chain voting is not yet implemented
  *
  */
-
 contract ElectionFactory {
     //////////////////
     // Errors      ///
@@ -34,9 +33,8 @@ contract ElectionFactory {
     address[] public publicElections;
 
     mapping(uint256 electionId => address owner) private electionIdToOwner;
-    mapping(address owner => address[] electionAddresses)
-        public ownerToElections;
-    
+    mapping(address owner => address[] electionAddresses) public ownerToElections;
+
     address private immutable RESULT_CALCULATOR_ADDRESS;
     address private immutable ELECTION_GENERATOR_ADDRESS;
     BallotGenerator private immutable BALLOT_GENERATOR;
@@ -46,9 +44,7 @@ contract ElectionFactory {
     //////////////
 
     event ElectionCreated(
-        address indexed creator,
-        Election.ElectionInfo indexed electionInfo,
-        Election.Candidate[] indexed candidates
+        address indexed creator, Election.ElectionInfo indexed electionInfo, Election.Candidate[] indexed candidates
     );
 
     //////////////////
@@ -81,24 +77,16 @@ contract ElectionFactory {
         uint256 _ballotType,
         uint256 _resultType
     ) external returns (address) {
-        if (_candidates.length < 2)
+        if (_candidates.length < 2) {
             revert ElectionFactory_InvalidCandidatesLength(_candidates.length);
+        }
 
         address electionAddress = Clones.clone(ELECTION_GENERATOR_ADDRESS);
-        address _ballot = BALLOT_GENERATOR.generateBallot(
-            _ballotType,
-            electionAddress
-        );
+        address _ballot = BALLOT_GENERATOR.generateBallot(_ballotType, electionAddress);
 
         Election election = Election(electionAddress);
         election.initialize(
-            _electionInfo,
-            _candidates,
-            _resultType,
-            electionCount,
-            _ballot,
-            msg.sender,
-            RESULT_CALCULATOR_ADDRESS
+            _electionInfo, _candidates, _resultType, electionCount, _ballot, msg.sender, RESULT_CALCULATOR_ADDRESS
         );
 
         emit ElectionCreated(msg.sender, _electionInfo, _candidates);
@@ -123,16 +111,11 @@ contract ElectionFactory {
         return factoryOwner;
     }
 
-    function getElectionOwner(
-        uint256 electionId
-    ) external view returns (address) {
+    function getElectionOwner(uint256 electionId) external view returns (address) {
         return electionIdToOwner[electionId];
     }
 
-    function getElectionAddress(
-        uint256 electionId
-    ) external view returns (address) {
+    function getElectionAddress(uint256 electionId) external view returns (address) {
         return publicElections[electionId];
     }
-
 }
